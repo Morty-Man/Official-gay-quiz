@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Definitely Scientific Quiz</title>
+<style>
+  :root{
+    --bg: #1a1033;
+    --bg2: #2d1b4e;
+    --panel: #241640;
+    --text: #f4eefe;
+    --muted: #b8a9d9;
+    --accent1: #ff6ec7;
+    --accent2: #7c5cff;
+    --accent3: #00e5c3;
+    --glow: 0 0 40px rgba(124,92,255,0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: radial-gradient(circle at 20% 10%, var(--bg2), var(--bg) 60%);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+
+  .card{
+    width: 100%;
+    max-width: 560px;
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 40px 36px;
+    box-shadow: var(--glow), 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    top:-60px; right:-60px;
+    width:180px; height:180px;
+    background: conic-gradient(from 90deg, var(--accent1), var(--accent2), var(--accent3), var(--accent1));
+    filter: blur(50px);
+    opacity:0.5;
+  }
+
+  h1{
+    font-size: 1.8rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .eyebrow{
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .subtitle{
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .progress-track{
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    transition: width 0.4s ease;
+  }
+
+  .qnum{
+    font-size: 0.8rem;
+    color: var(--accent3);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .question{
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 22px;
+    line-height: 1.4;
+  }
+
+  .choices{
+    display:flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .choice{
+    text-align:left;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    padding: 16px 18px;
+    border-radius: 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .choice:hover{
+    background: rgba(255,255,255,0.09);
+    border-color: var(--accent2);
+    transform: translateY(-2px);
+  }
+  .choice:active{
+    transform: translateY(0);
+  }
+
+  .result{
+    text-align:center;
+  }
+
+  .result h1{
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+  }
+
+  .badge{
+    display:inline-block;
+    margin: 18px 0 24px;
+    padding: 14px 28px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+    color: #1a1033;
+    box-shadow: 0 0 50px rgba(255,110,199,0.5);
+  }
+
+  .result p{
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .fineprint{
+    font-size: 0.75rem;
+    color: var(--muted);
+    opacity: 0.6;
+    margin-top: 24px;
+  }
+
+  .retry{
+    margin-top: 24px;
+    background: transparent;
+    border: 1px solid var(--accent2);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.15s ease;
+  }
+  .retry:hover{
+    background: rgba(124,92,255,0.15);
+  }
+
+  .hidden{ display:none; }
+
+  @media (prefers-reduced-motion: reduce){
+    .choice, .progress-fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div id="quizScreen">
+    <div class="eyebrow">The Definitely Scientific Quiz</div>
+    <h1>Are You Gay?</h1>
+    <p class="subtitle">Answer 10 rigorously peer-reviewed questions. Our algorithm (a coin that only has one side) will determine the truth.</p>
+
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="qnum" id="qnum">Question 1 of 10</div>
+    <div class="question" id="questionText"></div>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <div id="resultScreen" class="result hidden">
+    <div class="eyebrow">Results are in</div>
+    <h1>Analysis Complete</h1>
+    <div class="badge">Based off the science, you are extremely gay 🏳️‍🌈</div>
+    <p>Our algorithm cross-referenced your 10 answers against a highly sophisticated model and the result was unanimous and unambiguous.</p>
+    <button class="retry" id="retryBtn">Take it again</button>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  { q: "Which place would you be most likely to take someone on a date?",
+    choices: ["The beach", "A museum", "A cozy restaurant"] },
+  { q: "Pick a movie night snack:",
+    choices: ["Popcorn", "Nachos", "Candy"] },
+  { q: "Choose a vacation destination:",
+    choices: ["Mountains", "City break", "Tropical island"] },
+  { q: "Pick a color for your bedroom walls:",
+    choices: ["Sage green", "Charcoal grey", "Warm terracotta"] },
+  { q: "What's your ideal Friday night?",
+    choices: ["Quiet night in", "Dinner with friends", "Dancing till 2am"] },
+  { q: "Choose a pet:",
+    choices: ["Dog", "Cat", "Something with scales"] },
+  { q: "Pick a coffee order:",
+    choices: ["Black coffee", "Oat milk latte", "Iced caramel something"] },
+  { q: "Choose a way to spend a Sunday morning:",
+    choices: ["Sleeping in", "Farmers market", "Brunch with friends"] },
+  { q: "Pick a playlist mood:",
+    choices: ["Indie folk", "Pop bangers", "Moody R&B"] },
+  { q: "Choose a home decor style:",
+    choices: ["Minimalist", "Cozy and cluttered", "Bold and colorful"] }
+];
+
+let current = 0;
+const quizScreen = document.getElementById('quizScreen');
+const resultScreen = document.getElementById('resultScreen');
+const qnum = document.getElementById('qnum');
+const questionText = document.getElementById('questionText');
+const choicesEl = document.getElementById('choices');
+const progressFill = document.getElementById('progressFill');
+const retryBtn = document.getElementById('retryBtn');
+
+function renderQuestion(){
+  const item = questions[current];
+  qnum.textContent = `Question ${current + 1} of ${questions.length}`;
+  questionText.textContent = item.q;
+  progressFill.style.width = `${(current / questions.length) * 100}%`;
+
+  choicesEl.innerHTML = '';
+  item.choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choice;
+    btn.addEventListener('click', () => {
+      current++;
+      if(current < questions.length){
+        renderQuestion();
+      } else {
+        progressFill.style.width = '100%';
+        setTimeout(showResult, 200);
+      }
+    });
+    choicesEl.appendChild(btn);
+  });
+}
+
+function showResult(){
+  quizScreen.classList.add('hidden');
+  resultScreen.classList.remove('hidden');
+}
+
+retryBtn.addEventListener('click', () => {
+  current = 0;
+  resultScreen.classList.add('hidden');
+  quizScreen.classList.remove('hidden');
+  renderQuestion();
+});
+
+renderQuestion();
+</script>
+
+</body>
+</html>
